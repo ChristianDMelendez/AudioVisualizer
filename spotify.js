@@ -7,24 +7,13 @@ function redirectToSpotifyAuth() {
   window.location.href = url;
 }
 
-(function init() {
-  const token = localStorage.getItem("spotify_access_token");
-
-  if (!token) {
-    console.warn("⚠️ No token found — redirecting to Spotify login...");
-    redirectToSpotifyAuth();
-    return;
-  }
-
+function fetchSpotifyData(token) {
   fetch('https://api.spotify.com/v1/me/player/currently-playing', {
     headers: { 'Authorization': 'Bearer ' + token }
   }).then(res => {
-    if (res.status === 204 || res.status === 202) {
-      throw new Error("Nothing currently playing.");
-    }
+    if (!res.ok || res.status === 204) throw new Error("No track currently playing");
     return res.json();
   }).then(data => {
-    if (!data || !data.item) return;
     const track = data.item.name;
     const artist = data.item.artists.map(a => a.name).join(", ");
     document.getElementById("track-info").textContent = `${track} – ${artist}`;
@@ -35,7 +24,20 @@ function redirectToSpotifyAuth() {
   }).then(res => res.json()).then(features => {
     initVisualizer(features.energy || 0.6);
   }).catch(err => {
-    console.error("Spotify error:", err);
+    console.warn("Spotify fetch failed:", err);
     initVisualizer(0.5);
   });
+}
+
+(function init() {
+  const token = localStorage.getItem("spotify_access_token");
+  const loginBtn = document.getElementById("login-btn");
+
+  if (!token) {
+    loginBtn.style.display = 'block';
+    loginBtn.addEventListener("click", redirectToSpotifyAuth);
+  } else {
+    loginBtn.style.display = 'none';
+    fetchSpotifyData(token);
+  }
 })();
