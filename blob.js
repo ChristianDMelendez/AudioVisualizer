@@ -16,18 +16,13 @@ function initVisualizer(audioFeatureValue = 0.5) {
   };
 
   const loader = new THREE.FileLoader();
-  let vertexShader, fragmentShader;
-
   loader.load('vertex.txt', function (vert) {
-    vertexShader = vert;
     loader.load('fragment.txt', function (frag) {
-      fragmentShader = frag;
-
       geometry = new THREE.IcosahedronGeometry(2, 100);
       material = new THREE.ShaderMaterial({
         uniforms: uniforms,
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader,
+        vertexShader: vert,
+        fragmentShader: frag,
         wireframe: true
       });
 
