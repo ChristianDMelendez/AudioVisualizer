@@ -1,10 +1,8 @@
-const CLIENT_ID = 'e452bc1bd3814dda9f5eaf90f9d71b40';
-const REDIRECT_URI = 'https://christiandmelendez.github.io/AudioVisualizer/callback.html';
-const SCOPES = 'user-read-playback-state user-read-currently-playing';
+const BACKEND_URL = 'https://audiovisualizer-62xe.onrender.com';
 
 function redirectToSpotifyAuth() {
-  const url = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
-  window.location.href = url;
+  // Route login through your backend, not directly to Spotify
+  window.location.href = `${BACKEND_URL}/login`;
 }
 
 function fetchSpotifyData(token) {
@@ -30,14 +28,23 @@ function fetchSpotifyData(token) {
 }
 
 (function init() {
-  const token = localStorage.getItem("spotify_access_token");
   const loginBtn = document.getElementById("login-btn");
 
-  if (!token) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get("access_token");
+
+  if (token) {
+    localStorage.setItem("spotify_access_token", token);
+    window.history.replaceState({}, document.title, window.location.pathname); // Clean up the URL
+  }
+
+  const storedToken = localStorage.getItem("spotify_access_token");
+
+  if (!storedToken) {
     loginBtn.style.display = 'block';
     loginBtn.addEventListener("click", redirectToSpotifyAuth);
   } else {
     loginBtn.style.display = 'none';
-    fetchSpotifyData(token);
+    fetchSpotifyData(storedToken);
   }
 })();
