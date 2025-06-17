@@ -1,112 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Spotify Blob Visualizer</title>
+  <meta charset="UTF-8">
+  <title>Spotify Visualizer Login</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #000; color: #fff; font-family: sans-serif; }
-    #login { position: absolute; top: 20px; left: 20px; background: #1DB954; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; z-index: 2; }
-    #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: center/cover no-repeat; filter: blur(80px) brightness(0.5); transform: scale(1.2); }
-    canvas { position: relative; display: block; z-index: 1; }
+    body { background: #000; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+    button { background: #1DB954; border: none; padding: 1em 2em; font-size: 18px; color: white; cursor: pointer; border-radius: 6px; }
   </style>
 </head>
 <body>
-  <div id="bg"></div>
   <button id="login">Login with Spotify</button>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
   <script>
     const clientId = "e452bc1bd3814dda9f5eaf90f9d71b40";
     const redirectUri = "https://christiandmelendez.github.io/AudioVisualizer/callback.html";
     const scopes = "user-read-playback-state user-read-currently-playing";
-
-    // If token saved in sessionStorage, skip login
-    let token = sessionStorage.getItem('spotify_token');
-    if (token) initVisualizer(token);
-
     document.getElementById("login").onclick = () => {
-      const url = `https://accounts.spotify.com/authorize?client_id=${clientId}` +
-                  `&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}` +
-                  `&scope=${encodeURIComponent(scopes)}`;
+      const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
       window.location.href = url;
     };
-
-    // If redirected back with token in hash
-    const hash = window.location.hash;
-    if (hash.includes('access_token')) {
-      token = hash.match(/access_token=([^&]*)/)[1];
-      sessionStorage.setItem('spotify_token', token);
-      window.history.replaceState({}, document.title, '/AudioVisualizer/'); // clean URL
-      initVisualizer(token);
-    }
-
-    function initVisualizer(token) {
-      document.getElementById("login").style.display = 'none';
-
-      // Three.js setup
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
-      camera.position.z = 3;
-
-      const uniforms = { time: { value: 0 }, intensity: { value: 0.1 } };
-      const material = new THREE.ShaderMaterial({
-        vertexShader: `
-          uniform float time;
-          uniform float intensity;
-          varying vec3 vNormal;
-          float snoise(vec3 p) { return sin(p.x + time) * sin(p.y + time) * sin(p.z + time); }
-          void main() {
-            vNormal = normal;
-            gl_Position = projectionMatrix * modelViewMatrix *
-              vec4(position + normal * snoise(position * 3.0) * intensity, 1.0);
-          }
-        `,
-        fragmentShader: `
-          varying vec3 vNormal;
-          void main() { gl_FragColor = vec4(0.2,0.9,1.0,1.0); }
-        `,
-        uniforms
-      });
-      const blob = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 5), material);
-      scene.add(blob);
-      function animate() { requestAnimationFrame(animate); uniforms.time.value += 0.02; renderer.render(scene, camera); }
-      animate();
-
-      let beats = [], trackLength = 300000;
-
-      async function fetchTrack() {
-        const playRes = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
-          headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => null);
-        if (!playRes || playRes.status !== 200) return;
-        const playJson = await playRes.json();
-        if (!playJson?.item) return;
-        document.getElementById("bg").style.backgroundImage = `url('${playJson.item.album.images[0].url}')`;
-        trackLength = playJson.item.duration_ms;
-        const analysis = await fetch(`https://api.spotify.com/v1/audio-analysis/${playJson.item.id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).then(r => r.json());
-        beats = analysis.beats.map(b => b.start * 1000);
-      }
-
-      fetchTrack();
-      setInterval(fetchTrack, 15000);
-
-      setInterval(() => {
-        const now = (audioContextStartOffset() % trackLength) || Date.now() % trackLength;
-        if (beats.some(bt => Math.abs(bt - now) < 80)) {
-          uniforms.intensity.value = 0.5;
-          setTimeout(() => uniforms.intensity.value = 0.1, 100);
-        }
-      }, 50);
-
-      function audioContextStartOffset() {
-        return (Date.now() - (sessionStorage.getItem('spotify_start_ts') || (sessionStorage.setItem('spotify_start_ts', Date.now()), Date.now())));
-      }
-    }
   </script>
 </body>
 </html>
