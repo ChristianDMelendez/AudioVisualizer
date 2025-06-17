@@ -9,7 +9,7 @@ function redirectToSpotifyAuth() {
 
 function fetchSpotifyData(token) {
   fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-    headers: { 'Authorization': 'Bearer ' + token }
+    headers: { Authorization: 'Bearer ' + token }
   }).then(res => {
     if (!res.ok || res.status === 204) throw new Error("No track currently playing");
     return res.json();
@@ -19,7 +19,7 @@ function fetchSpotifyData(token) {
     document.getElementById("track-info").textContent = `${track} – ${artist}`;
 
     return fetch('https://api.spotify.com/v1/audio-features/' + data.item.id, {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { Authorization: 'Bearer ' + token }
     });
   }).then(res => res.json()).then(features => {
     initVisualizer(features.energy || 0.6);
