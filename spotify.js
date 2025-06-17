@@ -3,7 +3,7 @@ const REDIRECT_URI = 'https://christiandmelendez.github.io/AudioVisualizer/callb
 const SCOPES = 'user-read-playback-state user-read-currently-playing';
 
 function redirectToSpotifyAuth() {
-  const url = \`https://accounts.spotify.com/authorize?client_id=\${CLIENT_ID}&response_type=token&redirect_uri=\${encodeURIComponent(REDIRECT_URI)}&scope=\${encodeURIComponent(SCOPES)}\`;
+  const url = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
   window.location.href = url;
 }
 
@@ -11,8 +11,6 @@ const token = localStorage.getItem("spotify_access_token");
 if (!token) {
   console.warn("No token — running blob manually.");
   initVisualizer(0.75);
-} else {
-  redirectToSpotifyAuth();
 } else {
   fetch('https://api.spotify.com/v1/me/player/currently-playing', {
     headers: {
@@ -22,7 +20,7 @@ if (!token) {
     if (!data || !data.item) return;
     const track = data.item.name;
     const artist = data.item.artists.map(a => a.name).join(", ");
-    document.getElementById("track-info").textContent = \`\${track} – \${artist}\`;
+    document.getElementById("track-info").textContent = `${track} – ${artist}`;
 
     // Fetch audio features
     fetch('https://api.spotify.com/v1/audio-features/' + data.item.id, {
