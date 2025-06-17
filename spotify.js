@@ -1,4 +1,4 @@
-const CLIENT_ID = 'a652cb1bc4381d4da9f5eaf90f9d71b40';
+const CLIENT_ID = 'e452bc1bd3814dda9f5eaf90f9d71b40';
 const REDIRECT_URI = 'https://christiandmelendez.github.io/AudioVisualizer/callback.html';
 const SCOPES = 'user-read-playback-state user-read-currently-playing';
 
