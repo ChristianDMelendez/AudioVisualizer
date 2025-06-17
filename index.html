@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Spotify Visualizer Login</title>
+  <title>Login</title>
   <style>
-    body { background: #000; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
-    button { background: #1DB954; border: none; padding: 1em 2em; font-size: 18px; color: white; cursor: pointer; border-radius: 6px; }
+    body { background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    a button {
+      background: #1DB954;
+      padding: 15px 30px;
+      border: none;
+      font-size: 18px;
+      color: white;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
-  <button id="login">Login with Spotify</button>
-  <script>
-    const clientId = "e452bc1bd3814dda9f5eaf90f9d71b40";
-    const redirectUri = "https://christiandmelendez.github.io/AudioVisualizer/callback.html";
-    const scopes = "user-read-playback-state user-read-currently-playing";
-    document.getElementById("login").onclick = () => {
-      const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
-      window.location.href = url;
-    };
-  </script>
+  <a href="https://accounts.spotify.com/authorize?client_id=e452bc1bd3814dda9f5eaf90f9d71b40&response_type=token&redirect_uri=https%3A%2F%2Fchristiandmelendez.github.io%2FAudioVisualizer%2Fcallback.html&scope=user-read-playback-state%20user-read-currently-playing">
+    <button>Login with Spotify</button>
+  </a>
 </body>
 </html>
