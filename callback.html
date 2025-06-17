@@ -6,8 +6,9 @@
 </head>
 <body>
 <script>
-  const hash = window.location.hash.substring(1);
-  const params = new URLSearchParams(hash);
+  // Use `search` instead of `hash` since we're now using Authorization Code Flow
+  const query = window.location.search.substring(1);
+  const params = new URLSearchParams(query);
   const accessToken = params.get("access_token");
 
   if (accessToken) {
