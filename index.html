@@ -111,7 +111,6 @@ if (hash.includes("access_token")) {
 
   let beatTimes = [];
 
-  // Poll Spotify for playback + analysis
   function updateTrackInfo() {
     fetch("https://api.spotify.com/v1/me/player/currently-playing", {
       headers: { Authorization: `Bearer ${token}` }
@@ -128,17 +127,16 @@ if (hash.includes("access_token")) {
       })
       .then(res => res.json())
       .then(analysis => {
-        beatTimes = analysis.beats.map(b => b.start * 1000); // convert to ms
+        beatTimes = analysis.beats.map(b => b.start * 1000);
       });
     });
   }
 
   updateTrackInfo();
-  setInterval(updateTrackInfo, 15000); // check every 15 seconds
+  setInterval(updateTrackInfo, 15000);
 
-  // Schedule beat pulses
   function checkBeats() {
-    const now = Date.now() % 600000; // cycle timer
+    const now = Date.now() % 600000;
     const active = beatTimes.find(bt => Math.abs(bt - now) < 100);
     if (active) {
       uniforms.intensity.value = 0.5;
