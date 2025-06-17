@@ -33,7 +33,10 @@ app.get('/callback', async (req, res) => {
     });
 
     const access_token = response.data.access_token;
+
+    // 🔥 THIS is the line that was missing before:
     res.redirect(`https://christiandmelendez.github.io/AudioVisualizer/?access_token=${access_token}`);
+
   } catch (err) {
     console.error('Error exchanging token:', err.response?.data || err.message);
     res.status(500).send('Token exchange failed.');
