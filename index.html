@@ -1,1 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spotify Blob Visualizer</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    #login {
+      position: absolute;
+      z-index: 2;
+      top: 20px;
+      left: 20px;
+      background: #1DB954;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
 
+<button id="login">Login with Spotify</button>
+
+<!-- Include Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+
+<script>
+  const clientId = "e452bc1bd3814dda9f5eaf90f9d71b40";
+  const redirectUri = "https://christiandmelendez.github.io/AudioVisualizer/callback.html";
+  const scopes = "user-read-playback-state user-read-currently-playing";
+
+  document.getElementById("login").onclick = () => {
+    const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+    window.location.href = url;
+  };
+
+  // Extract token if redirected back
+  const hash = window.location.hash;
+  if (hash.includes("access_token")) {
+    document.getElementById("login").style.display = "none";
+    const token = hash.match(/access_token=([^&]*)/)[1];
+
+    // Start WebGL Blob Scene
+    let scene = new THREE.Scene();
+    let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    let renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const geometry = new THREE.IcosahedronGeometry(1, 5);
+    const uniforms = {
+      time: { value: 0 },
+      intensity: { value: 0.1 }
+    };
+
+    const vertexShader = `
+      uniform float time;
+      uniform float intensity;
+      varying vec3 vNormal;
+      float snoise(vec3 p) {
+        return sin(p.x + time) * sin(p.y + time) * sin(p.z + time);
+      }
+      void main() {
+        vNormal = normal;
+        vec3 newPosition = position + normal * snoise(position * 3.0) * intensity;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+      }
+    `;
+
+    const fragmentShader = `
+      varying vec3 vNormal;
+      void main() {
+        gl_FragColor = vec4(0.2, 0.9, 1.0, 1.0);
+      }
+    `;
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms
+    });
+
+    const blob = new THREE.Mesh(geometry, material);
+    scene.add(blob);
+    camera.position.z = 3;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      uniforms.time.value += 0.02;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Poll Spotify every 5 seconds for beat energy
+    setInterval(() => {
+      fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data || !data.item) return;
+        const trackId = data.item.id;
+
+        fetch(`https://api.spotify.com/v1/audio-features/${trackId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        .then(res => res.json())
+        .then(features => {
+          if (features && features.energy) {
+            uniforms.intensity.value = features.energy; // use energy as visual intensity
+          }
+        });
+      });
+    }, 5000);
+  }
+</script>
+
+</body>
+</html>
