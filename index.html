@@ -2,22 +2,30 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <title>Login with Spotify</title>
   <style>
-    body { background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    a button {
+    body {
+      margin: 0;
+      background-color: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    a {
       background: #1DB954;
-      padding: 15px 30px;
-      border: none;
-      font-size: 18px;
       color: white;
+      padding: 15px 30px;
+      text-decoration: none;
+      font-size: 18px;
       border-radius: 6px;
+      font-family: sans-serif;
     }
   </style>
 </head>
 <body>
   <a href="https://accounts.spotify.com/authorize?client_id=e452bc1bd3814dda9f5eaf90f9d71b40&response_type=token&redirect_uri=https%3A%2F%2Fchristiandmelendez.github.io%2FAudioVisualizer%2Fcallback.html&scope=user-read-playback-state%20user-read-currently-playing">
-    <button>Login with Spotify</button>
+    Login with Spotify
   </a>
 </body>
 </html>
