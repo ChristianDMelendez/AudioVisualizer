@@ -9,9 +9,8 @@ A GitHub Pages-ready 3D blob visualizer built with Three.js and Spotify API.
 - Fully client-side, no backend
 
 ## Setup
-1. Upload files to GitHub
-2. Enable GitHub Pages from repository settings
-3. Make sure your Spotify App has the redirect URI set to:
-   `https://<yourusername>.github.io/<repo>/callback.html`
-
-You're done!
+1. Upload all files to GitHub
+2. Enable GitHub Pages from repo Settings
+3. Use this redirect URI in your Spotify App:  
+   `https://christiandmelendez.github.io/AudioVisualizer/callback.html`
+4. Done.
