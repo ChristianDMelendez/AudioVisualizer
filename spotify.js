@@ -7,26 +7,35 @@ function redirectToSpotifyAuth() {
   window.location.href = url;
 }
 
-const token = localStorage.getItem("spotify_access_token");
-if (!token) {
-  console.warn("No token — running blob manually.");
-  initVisualizer(0.75);
-} else {
+(function init() {
+  const token = localStorage.getItem("spotify_access_token");
+
+  if (!token) {
+    console.warn("⚠️ No token found — redirecting to Spotify login...");
+    redirectToSpotifyAuth();
+    return;
+  }
+
   fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-    headers: {
-      'Authorization': 'Bearer ' + token
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(res => {
+    if (res.status === 204 || res.status === 202) {
+      throw new Error("Nothing currently playing.");
     }
-  }).then(res => res.json()).then(data => {
+    return res.json();
+  }).then(data => {
     if (!data || !data.item) return;
     const track = data.item.name;
     const artist = data.item.artists.map(a => a.name).join(", ");
     document.getElementById("track-info").textContent = `${track} – ${artist}`;
 
-    // Fetch audio features
-    fetch('https://api.spotify.com/v1/audio-features/' + data.item.id, {
+    return fetch('https://api.spotify.com/v1/audio-features/' + data.item.id, {
       headers: { 'Authorization': 'Bearer ' + token }
-    }).then(res => res.json()).then(features => {
-      initVisualizer(features.energy); // Energy drives deformation
     });
+  }).then(res => res.json()).then(features => {
+    initVisualizer(features.energy || 0.6);
+  }).catch(err => {
+    console.error("Spotify error:", err);
+    initVisualizer(0.5);
   });
-}
+})();
